@@ -1,0 +1,5 @@
+/home/wergillius/tools/indelmap
+/home/wergillius/tools/indelgen
+/home/wergillius/tools/indelgentarget
+/home/wergillius/tools/indelgen_i1
+/home/wergillius/tools/indelmh

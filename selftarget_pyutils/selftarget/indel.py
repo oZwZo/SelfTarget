@@ -2,24 +2,37 @@ import io, os, csv, sys, re
 import numpy as np
 
 def tokFullIndel(indel):
+    """
+    Arguments:
+        indel : indel identifier. e.g: D10_L-13C2R0
+    Return:
+        indel_type , indel size , details , muts
+    """
+    # D10_L-13C2R0
     indel_toks = indel.split('_')
-    indel_type, indel_details = indel_toks[0], ''
+    indel_type, indel_details = indel_toks[0], '' # D10
     if len(indel_toks) > 1:
-        indel_details =  indel_toks[1]
+        indel_details =  indel_toks[1]            # L-13C2R0
     cigar_toks = re.findall(r'([CLRDI]+)(-?\d+)', indel_details)
+
     details, muts = {'I':0,'D':0,'C':0}, []
+    # only count the occurance of Insertion , deletion and complements 
+    # L and R not counted
     for (letter,val) in cigar_toks:
         details[letter] = eval(val)
+
+    #  > 2 means location identifier has letter no just 'L' and 'R'
     if len(indel_toks) > 2 or (indel_type == '-' and len(indel_toks) > 1):
         mut_toks = re.findall(r'([MNDSI]+)(-?\d+)(\[[ATGC]+\])?', indel_toks[-1])
         for (letter,val,nucl) in mut_toks:
             if nucl == '':
                 nucl = '[]'
             muts.append((letter, eval(val), nucl[1:-1]))
+
     if indel_type[0] == '-':
         isize = 0
     else:
-        isize = eval(indel_type[1:])
+        isize = eval(indel_type[1:]) # D10 -> 10 , I2 -> 2
     return indel_type[0],isize,details, muts
     
 def computeReadLength(indel, oligo_indel):

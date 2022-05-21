@@ -12,12 +12,12 @@ from run_all_mapped_split import runAllMappedSplit
 from run_all_compile_nulls import runAllCompileNulls
 from run_all_indelmap import runAllIndelMap
 
-sys.path.append('..')
+sys.path.append('/home/wergillius/Project/SelfTarget/indel_analysis')
 from combine_results_files import combineAllFiles
 
-sys.path.append('../microhomology')
+sys.path.append('/home/wergillius/Project/SelfTarget/indel_analysis/microhomology')
 from run_all_collect_mh_frequencies_by_len import runAllCollectMHFrequenciesByLen
-sys.path.append('../microhomology_mismatch')
+sys.path.append('/home/wergillius/Project/SelfTarget/indel_analysis/microhomology_mismatch')
 from fetch_mh_mismatch_frequencies import fetchMhMismatchFrequencies
 
 def printStatus(status):
@@ -27,16 +27,16 @@ def printStatus(status):
 #----------------------------------------------------------------------
 # Copy all example data to results directory since script runs in place
 #----------------------------------------------------------------------
-shutil.copytree('/data/indel_processing_example', '/results/indel_processing_example')
+shutil.copytree('/home/wergillius/Project/SelfTarget/data/indel_processing_example', '/home/wergillius/Project/SelfTarget/results/indel_processing_example')
 
 setRunLocal(True)
-if not os.path.isdir('/results/indel_processing_example'): os.mkdir('/results/indel_processing_example')
-setHighDataDir('/results/indel_processing_example/')
+if not os.path.isdir('/home/wergillius/Project/SelfTarget/results/indel_processing_example'): os.mkdir('/home/wergillius/Project/SelfTarget/results/indel_processing_example')
+setHighDataDir('/home/wergillius/Project/SelfTarget/results/indel_processing_example/')
 setPythonCmd('python')
-setPearExe('/usr/local/bin/pear')
-setIndelMapExe('/usr/local/bin/indelmap')
-setIndelGenI1Exe('/usr/local/bin/indelgen_i1')
-setIndelMhExe('/usr/local/bin/indelmh')
+setPearExe('/home/wergillius/tools/pear')
+setIndelMapExe('/home/wergillius/tools/indelmap')
+setIndelGenI1Exe('/home/wergillius/tools/indelgen_i1')
+setIndelMhExe('/home/wergillius/tools/indelmh')
 
 #----------------------------------------------------------------
 # Processing of raw reads to produce descriptions of indels

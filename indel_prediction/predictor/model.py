@@ -154,10 +154,14 @@ def debugIndel(theta, data, indel, feature_columns):
         print(indel, [(x,theta) for (x,y,theta) in zip(feature_columns,[row[x] for x in feature_columns],theta) if y])
 
 def computePredictedProfile(data, theta, feature_columns):
+    # inner dot ->
     data['expThetaX'] = np.exp(data.apply(calcThetaX, axis=1, args=(theta,feature_columns)))
-    sum_exp = data['expThetaX'].sum()
+    sum_exp = data['expThetaX'].sum()    # |          
+    #  normalize                          \|/
+    
     profile = {x: expthetax*1000/sum_exp for (x,expthetax) in zip(data['Indel'],data['expThetaX'])}
     counts = getProfileCounts(profile)
+    # counts is not used during prediction
     return profile, counts
        
 def recordProfiles( output_dir, theta, guideset, feature_columns ):

@@ -32,4 +32,4 @@ if __name__ == '__main__':
     else:
         stop_idx = -1
 
-    runAllPair(start_idx, stop_idx)
+    runAllPear(start_idx, stop_idx)

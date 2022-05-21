@@ -391,6 +391,15 @@ def get_guide_info_from_oligo_id(profile_file: str, oligo_id: str) -> CrisprLine
 
 
 def fetchIndelSizeCounts(p1):
+    """
+    Arguments:
+        p1 : dict, a dictionary from indel_identifier to proportion
+    Return:
+        inframe:  float, The overall proportion of inframe mutation after looking through all the Indel
+        outframe: float, The overall proportion of outframe mutation after looking through all the Indel
+        size_counts: dict : summarize the total proportion of I and D
+    """
+    # size_coutns is not used during prediction
     inframe, outframe, size_counts, = 0,0,{'I':{},'D':{}}
     for i in range(1,21):
         size_counts['I'][i] = 0
@@ -398,15 +407,18 @@ def fetchIndelSizeCounts(p1):
     for indel in p1:
         if indel == '-':
             continue
+    #    D     1     L-2R0 ...
         itype,isize,details, muts = tokFullIndel(indel)
-        net_isize = isize - details['I'] - details['D']
+        net_isize = isize - details['I'] - details['D']  # what about C?
+    #    
         if net_isize % 3 == 0:
-            inframe += p1[indel]
+            inframe += p1[indel]  # add up the proportion
         else:
             outframe += p1[indel]
+        # if net-Isize is lareger than 20
         if net_isize not in size_counts[itype]:
             size_counts[itype][net_isize] = 0
-        size_counts[itype][net_isize] += p1[indel]
+        size_counts[itype][net_isize] += p1[indel] # also adding up the proportion
     return inframe, outframe, size_counts
 
 def makeClassProfile(p1):

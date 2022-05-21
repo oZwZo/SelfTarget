@@ -35,7 +35,7 @@ def plotInFrame(overbeek_inframes, ours_inframes, oof_sel_overbeek_ids, pred_res
     saveFig('in_frame_full_scatter')
 
 def loadMappings():
-    f = io.open(getHighDataDir() + '/overbeek_to_oligo_mapping.txt')
+    f = io.open('/home/wergillius/Project/SelfTarget/indel_analysis/overbeek_to_oligo_mapping.txt')
     reader = csv.reader(f, delimiter='\t')
     mappings = {}
     for toks in reader:
@@ -102,14 +102,17 @@ def compareOverbeekProfiles(selected_overbeek_id=None, pred_results_dir = '../in
             continue
         
         overbeek_filename = getHighDataDir() +'/overbeek_fastq_files/' + overbeek_id + '_mappedindelsummary.txt'
-
+        os.path.exists(overbeek_filename)
         p1, p1_new, p1_old, o1, rep_reads1, rep_reads2 = {}, {}, {}, {}, {},{}
         nreads2, nreads1, nreads_old, nreads_new, nnull_old, nnull_new, nnull1, nnull2 = 0,0,0,0,0,0,0,0
         
         #Read the overbreek profile
         numread2, perc_accept2, num_null2  = readSummaryToProfile(overbeek_filename, o1, oligoid=overbeek_id, remove_long_indels=remove_long_indels, remove_wt = False)
+        
+        # how is indel profiles generated
         if selected_overbeek_id is not None: 
-            fetchRepresentativeCleanReads(getHighDataDir() +'/overbeek_fastq_files/' + overbeek_id + '_mappedindelprofiles.txt', rep_reads2, oligoid=overbeek_id)
+            OBID_indel_profile_path = getHighDataDir() +'/overbeek_fastq_files/' + overbeek_id + '_mappedindelprofiles.txt'
+            fetchRepresentativeCleanReads(OBID_indel_profile_path, rep_reads2, oligoid=overbeek_id)
             pam_loc2, pam_dir2 = getNullTargetPamDetails(getHighDataDir() +'/overbeek_control_fastq_files/' + overbeek_id + '_exptargets.txt', oligoid=overbeek_id)
         nreads2 += numread2
         nnull2 += num_null2
@@ -131,6 +134,7 @@ def compareOverbeekProfiles(selected_overbeek_id=None, pred_results_dir = '../in
             if is_old:
                 oligo_dirs, p1_old_new, null_oligo_dir = old_dirs, p1_old, 'ST_April_2017/data/NULL_Old/mapped_reads/Oligos_71'
                 p1_reps, rr_reps = p1_old_reps, rr_old_reps
+                continue
             else:
                 oligo_dirs, p1_old_new,  null_oligo_dir = new_dirs, p1_new,'ST_April_2017/data/NULL_New/mapped_reads/Oligos_71'
                 p1_reps, rr_reps = p1_new_reps, rr_new_reps
@@ -142,9 +146,11 @@ def compareOverbeekProfiles(selected_overbeek_id=None, pred_results_dir = '../in
                     rep_idx = 0 if '800x' in oligo_dir else 1
                     nr_rep, pa_rep, nn_rep  = readSummaryToProfile(oligo_dir + '/' + oligo_filename, p1_reps[rep_idx], oligoid=oligo_id, remove_long_indels=remove_long_indels, remove_wt = remove_wt, wt_thresh=wt_thresh)
                 if selected_overbeek_id is not None: 
-                    fetchRepresentativeCleanReads(oligo_dir + '/' + read_filename, rep_reads1, oligoid=oligo_id)
+                    read_txt_path = oligo_dir + '/' + read_filename
+                    assert os.path.exists(read_txt_path)
+                    fetchRepresentativeCleanReads(read_txt_path, rep_reads1, oligoid=oligo_id)
                     if 'DPI7' in oligo_dir:
-                        fetchRepresentativeCleanReads(oligo_dir + '/' + read_filename, rr_reps[rep_idx], oligoid=oligo_id)
+                        fetchRepresentativeCleanReads(read_txt_path, rr_reps[rep_idx], oligoid=oligo_id)
                     if pam_loc1 is None:
                         pam_loc1, pam_dir1 = getNullTargetPamDetails(getHighDataDir()+ '/' + null_oligo_dir + '/' + exptarget_filename, oligoid=oligo_id )
                 if is_old: nreads_old += numread1; nnull_old += num_null1
@@ -239,8 +245,9 @@ def compareOverbeekProfiles(selected_overbeek_id=None, pred_results_dir = '../in
 
 if __name__ == '__main__':
 
-    setHighDataDir('.')
-    setPlotDir('plots')
+    setHighDataDir('/home/wergillius/Project/SelfTarget/data/endogenous_comparisons')
+    result_dir = '/home/wergillius/Project/SelfTarget/data/endogenous_comparisons'
+    setPlotDir('/home/wergillius/Project/SelfTarget/plots')
     setFigType('png')
-    compareOverbeekProfiles(selected_overbeek_id='Overbeek16', pred_results_dir='.')
-    compareOverbeekProfiles(selected_overbeek_id=None, pred_results_dir='.')
+    compareOverbeekProfiles(selected_overbeek_id='Overbeek16', pred_results_dir=result_dir)
+    compareOverbeekProfiles(selected_overbeek_id=None, pred_results_dir=result_dir)

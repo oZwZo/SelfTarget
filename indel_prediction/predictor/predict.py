@@ -12,8 +12,8 @@ from selftarget.plot import setFigType
 from selftarget.profile import fetchIndelSizeCounts, getProfileCounts, fetchReads, FRAME_SHIFT
 from selftarget.view import plotProfiles
 
-INDELGENTARGET_EXE = os.getenv("INDELGENTARGET_EXE", "C:/Users/fa9/postdoc/indelmap/build/Release/indelgentarget.exe")
-DEFAULT_MODEL = 'model_output_10000_0.01000000_0.01000000_-0.607_theta.txt_cf0.txt' 
+INDELGENTARGET_EXE = os.getenv("INDELGENTARGET_EXE", "/home/wergillius/tools/indelgentarget")
+DEFAULT_MODEL = '/home/wergillius/Project/SelfTarget/indel_prediction/predictor/model_output_10000_0.01000000_0.01000000_-0.607_theta.txt_cf0.txt' 
 
 def setIndelGenTargetExeLoc(val):
     global INDELGENTARGET_EXE
@@ -40,16 +40,32 @@ def writePredictedRepReadsToFile(p1, rep_reads, fout):
         idx += 1
         
 def predictMutations(theta_file, target_seq, pam_idx, add_null=True):
+    """
+    Arguments:
+        theta_file: str of <PATH>
+        target_seq: str, the full sequences that gRNA target to, a input of `FORECasT.py`
+        pam_idx: int,  the location of pam domain in the target sequence, a input of `FORECasT.py`
+        add_null: bool, whether returning null Indel `-` 
 
+    Returns:
+        p_predict: dict, {Indel_identifier : proportion *1000}
+        rep_reads: dict, {Indel_identifier : mutated sequences}
+        in_frame_perc: float (0,100), the percentage of inframe mutation; 
+    """
     theta, train_set, theta_feature_columns = readTheta(theta_file)
 
     #generate indels
     left_trim = 0
     tmp_genindels_file = 'tmp_genindels_%s_%d.txt' % (target_seq, random.randint(0,100000))
+    # can look at the example /home/wergillius/Project/SelfTarget/indel_prediction/predictor/tmp_genindels_ATCGATGACTGATCGTAGCTAGCTGGGATGCTAGCTAGTTGCATGCTAGGAGTCAGCTAG_4193.txt
     cmd = INDELGENTARGET_EXE + ' %s %d %s' % (target_seq, pam_idx, tmp_genindels_file)
     print(cmd); subprocess.check_call(cmd.split())
-    rep_reads = fetchRepReads(tmp_genindels_file)
+
+    # get a dict from IndelIdentifier to mutated seq
+    rep_reads = fetchRepReads(tmp_genindels_file) 
+    # indel size
     isize, smallest_indel = min([(tokFullIndel(x)[1],x) for x in rep_reads]) if len(rep_reads) > 0 else (0,'-') 
+    # get the first 10 nt sequences by             dict[key] -> seq [:10] 
     if isize > 0: left_trim = target_seq.find(rep_reads[smallest_indel][:10])
 
     #compute features for all generated indels
@@ -63,10 +79,11 @@ def predictMutations(theta_file, target_seq, pam_idx, add_null=True):
         raise Exception('Stored feature names associated with model thetas are not contained in those computed')
 
     if len(set(theta_feature_columns).union(set(feature_columns))) != len(theta_feature_columns):
-        feature_data = feature_data[['Indel'] + theta_feature_columns]
-        feature_columns = theta_feature_columns
+        feature_data = feature_data[['Indel'] + theta_feature_columns] # only take features that are in the model
+        feature_columns = theta_feature_columns # rename it
 
     #Predict the profile
+    #p_predict is a dict like: {profile : expthetax*1000/sum_exp}
     p_predict, _ = computePredictedProfile(feature_data, theta, theta_feature_columns)
     in_frame, out_frame, _ = fetchIndelSizeCounts(p_predict)
     in_frame_perc = in_frame*100.0/(in_frame + out_frame)

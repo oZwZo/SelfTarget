@@ -9,7 +9,7 @@ import Bio.Seq
 
 from selftarget.util import getIndelMapExe
 
-sys.path.append('../compute_indels')
+sys.path.append('/home/wergillius/Project/SelfTarget/indel_analysis/compute_indels')
 from compile_mapped_null_profiles import compileMappedNull, convertToExpFile
 from reformat_indel_profile import reformatIndelProfile
 

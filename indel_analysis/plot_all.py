@@ -20,8 +20,8 @@ sys.path.append('../indel_prediction/model_testing')
 from plot_old_new_predictions import runAnalysis as plotPred
 
 setFigType('png')
-setPlotDir('/results/plots')
-setHighDataDir('/data/summary_data')
+setPlotDir('/home/wergillius/Project/SelfTarget/results/plots')
+setHighDataDir('/home/wergillius/Project/SelfTarget/data/summary_data')
 
 plotI1()
 plotKLCmp()
